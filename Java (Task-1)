@@ -1,0 +1,66 @@
+import java.io.*;
+import java.nio.file.*;
+
+public class FileHandlingUtility {
+
+    private static final String FILE_NAME = "sample.txt";
+
+    // Method to write content to a file
+    public static void writeFile(String content) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_NAME))) {
+            writer.write(content);
+            System.out.println("File written successfully.");
+        } catch (IOException e) {
+            System.err.println("Error writing to file: " + e.getMessage());
+        }
+    }
+
+    // Method to read content from a file
+    public static void readFile() {
+        try (BufferedReader reader = new BufferedReader(new FileReader(FILE_NAME))) {
+            String line;
+            System.out.println("\nFile Content:");
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+            }
+        } catch (IOException e) {
+            System.err.println("Error reading the file: " + e.getMessage());
+        }
+    }
+
+    // Method to modify content in a file
+    public static void modifyFile(String oldText, String newText) {
+        try {
+            Path path = Paths.get(FILE_NAME);
+            String content = new String(Files.readAllBytes(path));
+            
+            if (content.contains(oldText)) {
+                content = content.replace(oldText, newText);
+                Files.write(path, content.getBytes());
+                System.out.println("File modified successfully.");
+            } else {
+                System.out.println("Text not found in file.");
+            }
+
+        } catch (IOException e) {
+            System.err.println("Error modifying the file: " + e.getMessage());
+        }
+    }
+
+    // Main method to demonstrate file operations
+    public static void main(String[] args) {
+        String textToWrite = "Hello, this is a sample text file.\nWelcome to Java file handling!";
+        
+        // Writing to a file
+        writeFile(textToWrite);
+        
+        // Reading from the file
+        readFile();
+        
+        // Modifying the file
+        modifyFile("sample", "modified sample");
+
+        // Reading again to confirm modification
+        readFile();
+    }
+}

@@ -1,0 +1,75 @@
+import java.util.*;
+
+public class RecommendationSystem {
+
+    // Sample user-item preference matrix
+    static int[][] ratings = {
+        {5, 4, 0, 0, 3},
+        {4, 0, 0, 2, 1},
+        {0, 0, 5, 4, 0},
+        {0, 3, 4, 0, 2},
+        {3, 0, 0, 4, 5}
+    };
+
+    public static void main(String[] args) {
+        int userIndex = 0; // Example user index for recommendations
+        List<Integer> recommendations = recommend(userIndex);
+        System.out.println("Recommended items for user " + userIndex + ": " + recommendations);
+    }
+
+    // Recommend items for a specific user
+    public static List<Integer> recommend(int userIndex) {
+        double[] similarities = calculateSimilarities(userIndex);
+        double[] predictedRatings = predictRatings(userIndex, similarities);
+
+        // Recommend items with the highest predicted ratings
+        List<Integer> recommendations = new ArrayList<>();
+        for (int i = 0; i < ratings[userIndex].length; i++) {
+            if (ratings[userIndex][i] == 0 && predictedRatings[i] > 3.0) {
+                recommendations.add(i);
+            }
+        }
+
+        return recommendations;
+    }
+
+    // Calculate similarity between users
+    private static double[] calculateSimilarities(int userIndex) {
+        double[] similarities = new double[ratings.length];
+        for (int i = 0; i < ratings.length; i++) {
+            if (i != userIndex) {
+                similarities[i] = cosineSimilarity(ratings[userIndex], ratings[i]);
+            }
+        }
+        return similarities;
+    }
+
+    // Predict ratings for a user based on similarities
+    private static double[] predictRatings(int userIndex, double[] similarities) {
+        double[] predictedRatings = new double[ratings[userIndex].length];
+        for (int item = 0; item < ratings[userIndex].length; item++) {
+            if (ratings[userIndex][item] == 0) {
+                double weightedSum = 0, similaritySum = 0;
+                for (int otherUser = 0; otherUser < ratings.length; otherUser++) {
+                    if (otherUser != userIndex && ratings[otherUser][item] > 0) {
+                        weightedSum += similarities[otherUser] * ratings[otherUser][item];
+                        similaritySum += Math.abs(similarities[otherUser]);
+                    }
+                }
+                predictedRatings[item] = similaritySum > 0 ? weightedSum / similaritySum : 0;
+            }
+        }
+        return predictedRatings;
+    }
+
+    // Calculate cosine similarity between two users
+    private static double cosineSimilarity(int[] user1, int[] user2) {
+        double dotProduct = 0, normUser1 = 0, normUser2 = 0;
+        for (int i = 0; i < user1.length; i++) {
+            dotProduct += user1[i] * user2[i];
+            normUser1 += user1[i] * user1[i];
+            normUser2 += user2[i] * user2[i];
+        }
+        return normUser1 > 0 && normUser2 > 0 ? dotProduct / (Math.sqrt(normUser1) * Math.sqrt(normUser2)) : 0;
+    }
+}
